@@ -11,7 +11,9 @@ pgp_books <- unique(c(pearl_of_great_price$book_title, pearl_of_great_price$book
 dc_books <- unique(c(doctrine_and_covenants$book_title, doctrine_and_covenants$book_short_title))
 
 prep_regex <- function(book_names) {
-  reg_ex <- paste(book_names, collapse='|')
+  # Defining a reference as a citation of scripture
+  reg_ex <- paste(book_names, '[0-9]+', collapse='|')
+  # Correct abbreviation regex notation
   reg_ex <- str_replace_all(reg_ex, '\\.', '\\\\\\.')
   return(reg_ex)
 }
@@ -35,9 +37,10 @@ conf_refs <- conf %>%
 
 
 conf_refs %>%
-  pivot_longer(bom_total:dc_total) %>%
-  ggplot(aes(x=date, y=value, col=name)) +
-  geom_smooth(size=1)
+  pivot_longer(bom_total:dc_total, names_to='scripture', values_to='citations') %>%
+  group_by(date) %>%
+  ggplot(aes(x=date, y=citations, fill=scripture, col=scripture)) +
+  geom_line(size=1, span=0.75)
 
 # Convert text to tidy table format, removing stop words
 tidy_conf <- conf %>%
