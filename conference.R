@@ -2,6 +2,7 @@ library(tidyverse)
 library(scales)
 library(scriptuRs)
 library(lubridate)
+library(tidytext)
 
 # Get all variations of scripture citations within talks
 bom_books <- unique(c(book_of_mormon$book_title, book_of_mormon$book_short_title))
@@ -59,6 +60,40 @@ tidy_conf %>%
   geom_col() +
   xlab(NULL) +
   coord_flip()
+
+
+# Basic Shiny using uninteresting bar plot
+library(shiny)
+ui <- fluidPage(
+  titlePanel("Common Words from Speakers"),
+  sidebarLayout(
+    sidebarPanel(
+      textInput('speaker', "Choose a speaker", "Russell M. Nelson"),
+    ),
+    mainPanel(
+      plotOutput('words')
+    )    
+  )  
+)
+
+server <- function(input, output, session){
+  output$words <- renderPlot({
+    
+    tidy_conf %>%
+      group_by(speaker) %>%
+      count(word, sort = TRUE) %>%
+      ungroup() %>%
+      filter(speaker == input$speaker) %>%
+      filter(n > 150) %>%
+      mutate(word = reorder(word, n)) %>%
+      ggplot(aes(word, n)) +
+      geom_col() +
+      xlab(NULL) +
+      coord_flip()
+  })
+}
+
+shinyApp(ui = ui, server = server)
 
 ## NOTE: consider factoring in number of talks into proportion calculation
 frequency <- tidy_conf %>%
