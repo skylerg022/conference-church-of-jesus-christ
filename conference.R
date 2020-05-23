@@ -18,7 +18,8 @@ prep_regex <- function(book_names) {
   return(reg_ex)
 }
 
-conf <- read_csv('conference.csv')
+conf <- read.csv('conference.csv', stringsAsFactors = FALSE)
+
 
 conf_refs <- conf %>%
   filter(!is.na(text)) %>%
@@ -62,6 +63,22 @@ tidy_conf %>%
   xlab(NULL) +
   coord_flip()
 
+# Function that McKay wrote: Finds the frequency of a word
+word_conf <- function(word, whole = TRUE, data) {
+  x <- data
+  x$yearmonth <- round(x$year + (x$month/12), 2)
+  wor <- tolower(word)
+  if (whole == FALSE) x$word_count <- str_count(tolower(x$text), wor)
+  if (whole == TRUE) x$word_count <- str_count(tolower(x$text), paste0("[\\s[:punct:]]",wor,"[\\s[:punct:]]"))
+  
+  x <- x %>% group_by(yearmonth) %>% summarize("word_count" = sum(word_count))
+  return(ggplot(x, aes(x = yearmonth, y = word_count)) + geom_line() + 
+           geom_vline(xintercept = pull(x[which.min(x$word_count),"yearmonth"]), color = "blue") + 
+           geom_vline(xintercept = pull(x[which.max(x$word_count),"yearmonth"]), color = "red") +
+           labs(x = "Year", y = "Word Count", title = paste0("Word Count by Conference: ",wor)))
+}
+
+word_conf("jesus christ", whole = FALSE, conf)
 
 # Basic Shiny using uninteresting bar plot
 library(shiny)
@@ -70,9 +87,11 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       textInput('speaker', "Choose a speaker", "Russell M. Nelson"),
+      textInput('word', "Choose a word", "Jesus Christ")
     ),
     mainPanel(
-      plotOutput('words')
+      plotOutput('words'),
+      plotOutput('word')
     )    
   )  
 )
@@ -91,6 +110,9 @@ server <- function(input, output, session){
       geom_col() +
       xlab(NULL) +
       coord_flip()
+  })
+  output$word <- renderPlot({
+    word_conf(tolower(input$word), whole = FALSE, conf)
   })
 }
 
