@@ -16,7 +16,7 @@ library(scales)
 library(scriptuRs)
 library(lubridate)
 library(tidytext)
-
+tail(conf$text,1)
 # Get all variations of scripture citations within talks
 bom_books <- unique(c(book_of_mormon$book_title, book_of_mormon$book_short_title))
 ot_books <- unique(c(old_testament$book_title, old_testament$book_short_title))
@@ -34,6 +34,23 @@ prep_regex <- function(book_names) {
 }
 
 conf <- read.csv('conference.csv', stringsAsFactors = FALSE)
+
+# Function finds the citations for a book and plots a line graph
+book_reference <- function(book){
+  conf %>% 
+  filter(!is.na(text)) %>%
+  mutate(date = dmy(paste('01', month, year, sep ="/")),
+         book_refs = str_count(text, prep_regex(book))) %>%
+  group_by(date) %>%
+  summarize(book_total = sum(book_refs)) %>%
+    pivot_longer(book_total) %>%
+    ggplot(aes(x=date, y=value)) +
+    labs(title = paste("Citations of", book)) +
+    geom_line(size=1)
+} 
+
+book_reference(c("Doctrine and Covenants"))
+
 
 conf_refs <- conf %>%
   filter(!is.na(text)) %>%
