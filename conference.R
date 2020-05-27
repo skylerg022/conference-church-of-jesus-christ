@@ -1,4 +1,5 @@
 # Ideas of things to do:
+# DISCUSS COPYRIGHT INFRINGEMENT
 # Expand to other languages (Chinese and Russian currently)
 # Provide flexibility to look between April and October
 # Look at topics from talks (by webscraping)
@@ -8,6 +9,9 @@
 # Do some things similar to the BYU corpus
 # Named entity recognition (https://stanfordnlp.github.io/CoreNLP/ner.html?fbclid=IwAR3oQX4PdaA1m5E4XM2-5CwkEzYDTUcWNwzBJS0ouVtpGy6nTshUZOB3uAY)
 
+# Clean 1971-present talks and titles thoroughly
+# Shiny app: pages for each graph with unique inputs
+
 
 
 #Packages used
@@ -16,7 +20,7 @@ library(scales)
 library(scriptuRs)
 library(lubridate)
 library(tidytext)
-tail(conf$text,1)
+
 # Get all variations of scripture citations within talks
 bom_books <- unique(c(book_of_mormon$book_title, book_of_mormon$book_short_title))
 ot_books <- unique(c(old_testament$book_title, old_testament$book_short_title))
@@ -69,8 +73,8 @@ conf_refs <- conf %>%
 conf_refs %>%
   pivot_longer(bom_total:dc_total, names_to='scripture', values_to='citations') %>%
   group_by(date) %>%
-  ggplot(aes(x=date, y=citations, fill=scripture, col=scripture)) +
-  geom_line(size=1, span=0.75)
+  ggplot(aes(x=date, y=citations, col=scripture)) +
+  geom_smooth(size=1, span=0.75)
 
 
 conf_refs %>%
