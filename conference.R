@@ -1,7 +1,6 @@
 # Ideas of things to do:
 # DISCUSS COPYRIGHT INFRINGEMENT
 # Expand to other languages (Chinese and Russian currently)
-# Provide flexibility to look between April and October
 # Look at topics from talks (by webscraping)
 # Set up where a scripture can be inputted and talks are shown that include the scripture
 # Have option to create a word cloud from a subset of data
@@ -10,8 +9,16 @@
 # Named entity recognition (https://stanfordnlp.github.io/CoreNLP/ner.html?fbclid=IwAR3oQX4PdaA1m5E4XM2-5CwkEzYDTUcWNwzBJS0ouVtpGy6nTshUZOB3uAY)
 
 # Clean 1971-present talks and titles thoroughly
+
+# Plots
+
+# Functionality of Shiny App
+# Filtering: Provide flexibility to look between April and October
+# Filtering: Speakers
 # Shiny app: pages for each graph with unique inputs
 
+# Tabs: Speaker (average word use), Conference trends
+# Immediate improvements: button 
 
 
 #Packages used
@@ -117,7 +124,7 @@ tidy_conf %>%
   xlab(NULL) +
   coord_flip()
 
-
+unique_speakers <- sort(unique(tidy_conf$speaker))
 
 # Function that McKay wrote: Finds the frequency of a word
 word_conf <- function(word, whole = TRUE, data) {
@@ -142,9 +149,10 @@ ui <- fluidPage(
   titlePanel("Common Words from Speakers"),
   sidebarLayout(
     sidebarPanel(
-      textInput('speaker', "Choose a speaker", "Russell M. Nelson"),
+      selectInput('speaker', 'Choose a speaker', unique_speakers, 'Russell M. Nelson'),
       textInput('word', "Choose a word", "Jesus Christ"),
-      selectInput('year', "Select year", selected = 2020, choices = 1971:2020)
+      selectInput('year', "Select year", selected = 2020, choices = 1971:2020),
+      actionButton('update', 'Update')
     ),
     mainPanel(
       plotOutput('words'),
@@ -154,20 +162,21 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session){
-  output$words <- renderPlot({
-    
-    tidy_conf %>%
-      group_by(speaker) %>%
-      count(word, sort = TRUE) %>%
-      ungroup() %>%
+  tidy_conf_speaker <- tidy_conf %>%
+    group_by(speaker) %>%
+    count(word, sort = TRUE) %>%
+    ungroup()
+  rplot_words <- eventReactive(input$update, {
+    tidy_conf_speaker %>%
       filter(speaker == input$speaker) %>%
-      filter(n > 150) %>%
+      top_n(15, n) %>% #filter(n > 150) %>%
       mutate(word = reorder(word, n)) %>%
       ggplot(aes(word, n)) +
       geom_col() +
       xlab(NULL) +
       coord_flip()
   })
+  output$words <- renderPlot({ rplot_words() })
   output$word <- renderPlot({
     word_conf(tolower(input$word), whole = FALSE, conf)
   })

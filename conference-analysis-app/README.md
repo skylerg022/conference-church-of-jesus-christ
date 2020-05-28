@@ -1,0 +1,1 @@
+This is an investigative text analysis of conference talks from the Church of Jesus Christ of Latter-day Saints.
