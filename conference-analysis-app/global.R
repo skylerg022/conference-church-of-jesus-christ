@@ -19,6 +19,7 @@ tidy_conf <- conf %>%
 tidy_conf_speaker <- tidy_conf %>%
   group_by(speaker) %>%
   count(word, sort = TRUE) %>%
+  mutate(word = str_to_title(word)) %>%
   ungroup()
 
 unique_speakers <- sort(unique(tidy_conf$speaker))
@@ -35,5 +36,5 @@ word_conf <- function(word, whole = TRUE, data) {
   return(ggplot(x, aes(x = yearmonth, y = word_count)) + geom_line() + 
            geom_vline(xintercept = pull(x[which.min(x$word_count),"yearmonth"]), color = "blue") + 
            geom_vline(xintercept = pull(x[which.max(x$word_count),"yearmonth"]), color = "red") +
-           labs(x = "Year", y = "Word Count", title = paste0("Word Count by Conference: ",tools::toTitleCase(wor))))
+           labs(x = "Year", y = "Word Count", title = paste0("Word Count by Conference: ",str_to_title(wor))) + theme_classic())
 }
