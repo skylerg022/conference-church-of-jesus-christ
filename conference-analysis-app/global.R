@@ -34,7 +34,8 @@ word_conf <- function(word, whole = TRUE, data) {
   
   x <- x %>% group_by(yearmonth) %>% summarize("word_count" = sum(word_count))
   return(ggplot(x, aes(x = yearmonth, y = word_count)) + geom_line() + 
-           geom_vline(xintercept = pull(x[which.min(x$word_count),"yearmonth"]), color = "blue") + 
-           geom_vline(xintercept = pull(x[which.max(x$word_count),"yearmonth"]), color = "red") +
-           labs(x = "Year", y = "Word Count", title = paste0("Word Count by Conference: ",str_to_title(wor))) + theme_classic())
+           geom_point(aes(x = pull(x[which.min(word_count),"yearmonth"]),y=pull(x[which.min(word_count),"word_count"])), size =6, color = "blue") + 
+           geom_point(aes(x = pull(x[which.max(word_count),"yearmonth"]), y = pull(x[which.max(word_count),"word_count"])), size = 6, color = "red") +
+           labs(x = "Year", y = "Word Count", title = paste0("Word Count by Conference: ",str_to_title(wor))) +
+           theme_classic() + theme(axis.title = element_text(size = 14)))
 }

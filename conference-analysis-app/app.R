@@ -28,10 +28,13 @@ server <- function(input, output, session){
       top_n(15, n) %>%
       mutate(word = reorder(word, n)) %>%
       ggplot(aes(word, n)) +
-      geom_col() +
+      geom_col(fill="#003058") +
       xlab(NULL) +
+      ylab("Frequency") +
       coord_flip() +
-      theme_classic()
+      theme_classic() +
+      theme(axis.text.y = element_text(size = 16),
+            axis.title = element_text(size = 16))
   })
   rplot_word <- eventReactive(input$update, {
     word_conf(tolower(input$word), whole = FALSE, conf)
