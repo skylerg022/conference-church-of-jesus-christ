@@ -4,7 +4,7 @@ source('global.R')
 
 ui <- fluidPage(
   titlePanel("Common Words from Speakers"),
-  theme = shinythemes::shinytheme("superhero"),
+  theme = shinythemes::shinytheme("cerulean"),
   sidebarLayout(
     sidebarPanel(
       selectInput('speaker', 'Choose a speaker', unique_speakers, "Russell M. Nelson", selectize = TRUE),
