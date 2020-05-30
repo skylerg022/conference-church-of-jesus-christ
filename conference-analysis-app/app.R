@@ -2,24 +2,31 @@ library(shiny)
 library(shinythemes)
 source('global.R')
 
-ui <- fluidPage(
-  titlePanel("Common Words from Speakers"),
-  theme = shinythemes::shinytheme("cerulean"),
-  sidebarLayout(
-    sidebarPanel(
-      selectInput('speaker', 'Choose a speaker', unique_speakers, "Russell M. Nelson", selectize = TRUE),
-      textInput('word', "Choose a word", "Jesus Christ"),
-      # selectInput('year', "Select year", selected = 2020, choices = 1971:2020),
-      actionButton('update', 'Update')
-    ),
-    mainPanel(
-      tabsetPanel(
-        tabPanel("Speakers", plotOutput('words')),
-        tabPanel("Words Over Time", plotOutput('word'))
-      )
-    )    
-  )  
-)
+ui <- navbarPage("General Conference",
+      theme = shinythemes::shinytheme("cerulean"),
+      tabPanel("Speakers",
+        sidebarLayout(
+          sidebarPanel(
+            selectInput('speaker', 'Choose a speaker', unique_speakers, "Russell M. Nelson", selectize = TRUE),
+            actionButton('update', 'Update')
+          ),
+          mainPanel(
+            plotOutput('words')
+          )
+        )
+      ),
+      tabPanel("Words Over Time",
+        sidebarLayout(
+          sidebarPanel(
+            textInput('word', "Choose a word", "Jesus Christ"),
+              actionButton('update', 'Update')
+          ),
+          mainPanel(
+            plotOutput('word')
+          )
+        )  
+      )    
+)  
 
 server <- function(input, output, session){
   rplot_words <- eventReactive(input$update, {
