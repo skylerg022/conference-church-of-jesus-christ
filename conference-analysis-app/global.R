@@ -4,6 +4,7 @@ library(scales)
 library(scriptuRs)
 library(lubridate)
 library(tidytext)
+library(ggthemes)
 
 # Conference text data
 conf <- read.csv('datasets/conference.csv', stringsAsFactors = FALSE)

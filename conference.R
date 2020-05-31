@@ -21,6 +21,15 @@
 # Immediate improvements: button 
 
 
+# Plots themes I personally liked:
+# Clean, classic, minimial, linedraw, pander, hc, light (Classic currently implemented)
+
+# Shiny app themes
+# Cerulean, flatly, (Journal, if we can figure how to change colors), 
+# Paper, Readable, Spacelab (flatly is the current theme) 
+
+# We can also implement our own bootstrap theme if we would like by using a css file
+
 #Packages used
 library(tidyverse)
 library(scales)
@@ -44,7 +53,7 @@ prep_regex <- function(book_names) {
   return(reg_ex)
 }
 
-conf <- read.csv('conference.csv', stringsAsFactors = FALSE)
+conf <- read.csv('datasets/conference.csv', stringsAsFactors = FALSE)
 
 # Function finds the citations for a book and plots a line graph
 book_reference <- function(book){
@@ -60,7 +69,7 @@ book_reference <- function(book){
     geom_line(size=1)
 } 
 
-book_reference(c("Doctrine and Covenants"))
+book_reference(c("Doctrine and Covenants", "D&C"))
 
 
 conf_refs <- conf %>%
