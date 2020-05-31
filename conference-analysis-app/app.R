@@ -38,7 +38,19 @@ ui <- navbarPage("General Conference",
             plotOutput('word')
           )
         )  
-      )    
+      ),
+      tabPanel("Words Cloud",
+               sidebarLayout(
+                 sidebarPanel(
+                   numericInput('year', "Choose a year", value = 2020, min = 1971, max = 2020, step = 1),
+                   selectInput('session', "Select conference", c("April", "October")),
+                   actionButton('update3', 'Update')
+                 ),
+                 mainPanel(
+                   plotOutput('wordcloud')
+                 )
+               )  
+      )
 )
 
 server <- function(input, output, session){
@@ -59,9 +71,16 @@ server <- function(input, output, session){
   rplot_word <- eventReactive(input$update2, {
     word_conf(tolower(input$word), whole = FALSE, conf)
   })
+  rplot_wordcloud <- eventReactive(input$update3, {
+    session_num <- ifelse(input$session == "April", 4, 10)
+    conf_wordcloud(input$year, session_num)
+  })
   output$words <- renderPlot({ rplot_words() })
   output$word <- renderPlot({
     rplot_word()
+  })
+  output$wordcloud <- renderPlot({
+    rplot_wordcloud()
   })
 }
 

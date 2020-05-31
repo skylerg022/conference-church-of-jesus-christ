@@ -40,3 +40,13 @@ word_conf <- function(word, whole = TRUE, data) {
            labs(x = "Year", y = "Word Count", title = paste0("Word Count by Conference: ",str_to_title(wor))) +
            theme_classic() + theme(axis.title = element_text(size = 14)))
 }
+
+# Function to create a word cloud
+conf_wordcloud <- function(year, session){
+  library(wordcloud)
+  pal <- brewer.pal(8, "Dark2")
+  tidy_conf %>% 
+    filter(year == year, month == session) %>%
+    count(word, sort = TRUE) %>%
+    with(wordcloud(word, n, random.order = FALSE, max.words = 50, colors=pal))
+}
