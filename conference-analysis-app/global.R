@@ -8,14 +8,16 @@ library(ggthemes)
 
 # Conference text data
 conf <- read.csv('datasets/conference.csv', stringsAsFactors = FALSE)
-
+tidy_conf <- read.csv('datasets/tidy_conf.csv', stringsAsFactors = FALSE)
 # Convert text to tidy table format, removing stop words
-tidy_conf <- conf %>%
-  filter(!is.na(text)) %>%
-  arrange(desc(year), desc(month)) %>%
-  unnest_tokens(word, text) %>%
-  anti_join(stop_words) %>%
-  filter(!str_detect(word, '[0-9]+(:[0-9]+)*'))
+#tidy_conf <- conf %>%
+#  filter(!is.na(text)) %>%
+#  arrange(desc(year), desc(month)) %>%
+#  unnest_tokens(word, text) %>%
+#  anti_join(stop_words) %>%
+#  filter(!str_detect(word, '[0-9]+(:[0-9]+)*'))
+
+#write_csv(tidy_conf, 'datasets/tidy_conf.csv')
 
 tidy_conf_speaker <- tidy_conf %>%
   group_by(speaker) %>%
@@ -50,3 +52,4 @@ conf_wordcloud <- function(year, session){
     count(word, sort = TRUE) %>%
     with(wordcloud(word, n, random.order = FALSE, max.words = 50, colors=pal))
 }
+
