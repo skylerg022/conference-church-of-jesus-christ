@@ -1,5 +1,6 @@
 library(shiny)
 library(shinythemes)
+library(shinyforms)
 source('global.R')
 
 
@@ -7,13 +8,24 @@ source('global.R')
 
 #devtools::install_github("daattali/shinyforms") Use this to install shinyforms
 # https://github.com/daattali/shinyforms
-#questions <- list(
-#  list(id = "name", type = "text", title = "Name", mandatory = TRUE),
-#  list(id = "email", type = "text", title = "Email", mandatory = FALSE),
-#  list(id = "positive", type = "text", title = "What do you like about the app?", mandatory = FALSE),
-#  list(id = "negative", type = "text", title = "What do you not like about the app?", mandatory = FALSE),
-#  list(id = "ideas", type = "text", title = "What ideas do you have for improvement of this app?", mandatory = FALSE)
-#)
+questions <- list(
+ list(id = "name", type = "text", title = "Name", mandatory = TRUE),
+  list(id = "email", type = "text", title = "Email", mandatory = FALSE),
+ list(id = "positive", type = "text", title = "What do you like about the app?", mandatory = FALSE),
+  list(id = "negative", type = "text", title = "What do you not like about the app?", mandatory = FALSE),
+  list(id = "ideas", type = "text", title = "What ideas do you have for improvement of this app?", mandatory = FALSE)
+)
+
+formInfo <- list(
+  id = "basicinfo",
+  questions = questions,
+  storage = list(
+    # Right now, only flat file storage is supported
+    type = STORAGE_TYPES$FLATFILE,
+    # The path where responses are stored
+    path = "responses"
+  )
+)
 
 ui <- navbarPage("General Conference",
       theme = shinythemes::shinytheme("flatly"),
@@ -50,7 +62,9 @@ ui <- navbarPage("General Conference",
                    plotOutput('wordcloud')
                  )
                )  
-      )
+      ),
+      tabPanel("Feedback",
+               formUI(formInfo))
 )
 
 server <- function(input, output, session){
@@ -82,6 +96,7 @@ server <- function(input, output, session){
   output$wordcloud <- renderPlot({
     rplot_wordcloud()
   })
+  formServer(formInfo)
 }
 
 shinyApp(ui = ui, server = server)
