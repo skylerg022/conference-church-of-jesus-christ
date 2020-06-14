@@ -46,10 +46,9 @@ word_conf <- function(word, whole = TRUE, data) {
 # Function to create a word cloud
 conf_wordcloud <- function(year, session){
   library(wordcloud)
-  pal <- brewer.pal(8, "Dark2")
+  pal <- brewer.pal(5, "Dark2")
   tidy_conf %>% 
     filter(year == year, month == session) %>%
     count(word, sort = TRUE) %>%
-    with(wordcloud(word, n, random.order = FALSE, max.words = 50, colors=pal))
+    with(wordcloud(word, n, random.order = FALSE, max.words = 100, colors=pal, scale = c(3.5, .5)))
 }
-
