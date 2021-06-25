@@ -9,6 +9,7 @@ library(ggthemes)
 # Conference text data
 conf <- read.csv('datasets/conference.csv', stringsAsFactors = FALSE)
 tidy_conf <- read.csv('datasets/tidy_conf.csv', stringsAsFactors = FALSE)
+conf_topic <- read.csv('datasets/talks_by_topic_dec_2020.csv', stringsAsFactors = FALSE)
 # Convert text to tidy table format, removing stop words
 #tidy_conf <- conf %>%
 #  filter(!is.na(text)) %>%
@@ -18,6 +19,12 @@ tidy_conf <- read.csv('datasets/tidy_conf.csv', stringsAsFactors = FALSE)
 #  filter(!str_detect(word, '[0-9]+(:[0-9]+)*'))
 
 #write_csv(tidy_conf, 'datasets/tidy_conf.csv')
+topic_speaker <- conf_topic %>%
+  mutate(topic = str_trim(topic)) %>%
+  group_by(speaker) %>%
+  count(topic, sort = TRUE) %>%
+  mutate(topic = str_to_title(topic)) %>%
+  ungroup()
 
 tidy_conf_speaker <- tidy_conf %>%
   group_by(speaker) %>%
@@ -43,6 +50,20 @@ word_conf <- function(word, whole = TRUE, data) {
            theme_classic() + theme(axis.title = element_text(size = 14)))
 }
 
+topic_conf <- function(topic_choice, data) {
+  x <- data %>% mutate(yearmonth = round(month + (year/12), digits = 2),
+                       topic = str_to_title(str_trim(topic))) %>% 
+    group_by(yearmonth, topic) %>% 
+    summarize(topic_count = n()) %>% 
+    filter(topic == topic_choice)
+  return(ggplot(x, aes(x = yearmonth, y = topic_count)) + geom_line() + 
+           geom_point(aes(x = pull(x[which.min(topic_count),"yearmonth"]),y=pull(x[which.min(topic_count),"topic_count"])), size =6, color = "blue") + 
+           geom_point(aes(x = pull(x[which.max(topic_count),"yearmonth"]), y = pull(x[which.max(topic_count),"topic_count"])), size = 6, color = "red") +
+           labs(x = "Year", y = "Topic Count", title = paste0("Topic Count by Conference: ",str_to_title(topic_choice))) +
+           theme_classic() + theme(axis.title = element_text(size = 14)))
+}
+
+unique_topics <- sort(unique(topic_speaker$topic))
 # Function to create a word cloud
 conf_wordcloud <- function(year, session){
   library(wordcloud)
