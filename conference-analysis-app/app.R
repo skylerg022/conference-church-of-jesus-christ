@@ -125,8 +125,7 @@ server <- function(input, output, session){
     })
     output$wordcloud <- renderPlot({
         rplot_wordcloud()
-    }, height = function() {
-        session$clientData$output_wordcloud_width / 1.75})
+    })
 }
 
 shinyApp(ui = ui, server = server)
