@@ -2,6 +2,7 @@ library(shiny)
 library(shinythemes)
 #library(shinyforms)
 library(shinydashboard)
+library(wordcloud2)
 source('global.R')
 
 ui <- dashboardPage(
@@ -83,7 +84,7 @@ ui <- dashboardPage(
                     ),
                     fluidRow(
                         box(width = 9,
-                            plotOutput('wordcloud')
+                            wordcloud2Output('wordcloud')
                         )    
                     )
             )
@@ -139,7 +140,7 @@ server <- function(input, output, session){
     output$word <- renderPlot({
         rplot_word()
     })
-    output$wordcloud <- renderPlot({
+    output$wordcloud <- renderWordcloud2({
         rplot_wordcloud()
     })
 }

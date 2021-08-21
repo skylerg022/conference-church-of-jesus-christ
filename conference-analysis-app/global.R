@@ -66,11 +66,11 @@ topic_conf <- function(topic_choice, data) {
 unique_topics <- sort(unique(topic_speaker$topic))
 # Function to create a word cloud
 conf_wordcloud <- function(year, session){
-  library(wordcloud)
-  pal <- brewer.pal(8, "Paired")
-  dark_pal <- pal %>% gt::adjust_luminance(-1.0)
+  library(wordcloud2)
+  #pal <- brewer.pal(8, "Paired")
+  #dark_pal <- pal %>% gt::adjust_luminance(-1.0)
   tidy_conf %>% 
     filter(year == year, month == session) %>%
-    count(word, sort = TRUE) %>%
-    with(wordcloud(word, n, random.order = TRUE, max.words = 100, colors=dark_pal, rot.per = .2, scale = c(3.5, .25)))
+    count(word, sort = TRUE) %>% head(200) %>%
+    wordcloud2()
 }
