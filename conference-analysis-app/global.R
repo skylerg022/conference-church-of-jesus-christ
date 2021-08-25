@@ -71,6 +71,6 @@ conf_wordcloud <- function(year, session){
   #dark_pal <- pal %>% gt::adjust_luminance(-1.0)
   tidy_conf %>% 
     filter(year == year, month == session) %>%
-    count(word, sort = TRUE) %>% head(200) %>%
-    wordcloud2()
+    count(word, sort = TRUE) %>% head(150) %>%
+    wordcloud2(color = "random-dark") + WCtheme(1)
 }

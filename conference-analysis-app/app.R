@@ -83,7 +83,7 @@ ui <- dashboardPage(
                         )
                     ),
                     fluidRow(
-                        box(width = 9,
+                        box(width = 12,
                             wordcloud2Output('wordcloud')
                         )    
                     )
