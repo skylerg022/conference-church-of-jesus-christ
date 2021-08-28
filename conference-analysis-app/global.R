@@ -1,15 +1,17 @@
 #Packages used
 library(tidyverse)
 library(scales)
-library(scriptuRs)
 library(lubridate)
 library(tidytext)
 library(ggthemes)
+library(stopwords)
 
 # Conference text data
 conf <- read.csv('datasets/conference.csv', stringsAsFactors = FALSE)
 tidy_conf <- read.csv('datasets/tidy_conf.csv', stringsAsFactors = FALSE)
 conf_topic <- read.csv('datasets/talks_by_topic_dec_2020.csv', stringsAsFactors = FALSE)
+russian <- read.csv("datasets/conference_rus.csv", stringsAsFactors = FALSE)
+tidy_conf_ru <- read.csv("datasets/tidy_conf_ru.csv", stringsAsFactors = FALSE)
 # Convert text to tidy table format, removing stop words
 #tidy_conf <- conf %>%
 #  filter(!is.na(text)) %>%
@@ -19,6 +21,19 @@ conf_topic <- read.csv('datasets/talks_by_topic_dec_2020.csv', stringsAsFactors 
 #  filter(!str_detect(word, '[0-9]+(:[0-9]+)*'))
 
 #write_csv(tidy_conf, 'datasets/tidy_conf.csv')
+
+# russian_stop <- stopwords(language = "ru")
+# stop_words_ru <- data.frame(word = russian_stop, lexicon = "Snowball")
+
+# tidy_conf_ru <- russian %>%
+#   filter(!is.na(text)) %>%
+#   arrange(desc(year), desc(month)) %>%
+#   unnest_tokens(word, text) %>%
+#   anti_join(stop_words_ru) %>%
+#   filter(!str_detect(word, '[0-9]+(:[0-9]+)*'))
+# 
+# write.csv(tidy_conf_ru, 'datasets/tidy_conf_ru.csv')
+
 topic_speaker <- conf_topic %>%
   mutate(topic = str_trim(topic)) %>%
   group_by(speaker) %>%
@@ -32,10 +47,17 @@ tidy_conf_speaker <- tidy_conf %>%
   mutate(word = str_to_title(word)) %>%
   ungroup()
 
+tidy_conf_speaker_ru <- tidy_conf_ru %>%
+  group_by(speaker) %>%
+  count(word, sort = TRUE) %>%
+  mutate(word = str_to_title(word)) %>%
+  ungroup()
+
 unique_speakers <- sort(unique(tidy_conf$speaker))
+unique_speakers_ru <- sort(unique(tidy_conf_ru$speaker))
 
 # Function that McKay wrote: Finds the frequency of a word
-word_conf <- function(word, whole = TRUE, data) {
+word_conf_en <- function(word, whole = TRUE, data) {
   x <- data
   x$yearmonth <- round(x$year + (x$month/12), 2)
   wor <- tolower(word)
@@ -47,6 +69,21 @@ word_conf <- function(word, whole = TRUE, data) {
            geom_point(aes(x = pull(x[which.min(word_count),"yearmonth"]),y=pull(x[which.min(word_count),"word_count"])), size =6, color = "blue") + 
            geom_point(aes(x = pull(x[which.max(word_count),"yearmonth"]), y = pull(x[which.max(word_count),"word_count"])), size = 6, color = "red") +
            labs(x = "Year", y = "Word Count", title = paste0("Word Count by Conference: ",str_to_title(wor))) +
+           theme_classic() + theme(axis.title = element_text(size = 14)))
+}
+
+word_conf_ru <- function(word, whole = TRUE, data) {
+  x <- data
+  x$yearmonth <- round(x$year + (x$month/12), 2)
+  wor <- tolower(word)
+  if (whole == FALSE) x$word_count <- str_count(tolower(x$text), wor)
+  if (whole == TRUE) x$word_count <- str_count(tolower(x$text), paste0("[\\s[:punct:]]",wor,"[\\s[:punct:]]"))
+  
+  x <- x %>% group_by(yearmonth) %>% summarize("word_count" = sum(word_count))
+  return(ggplot(x, aes(x = yearmonth, y = word_count)) + geom_line() + 
+           geom_point(aes(x = pull(x[which.min(word_count),"yearmonth"]),y=pull(x[which.min(word_count),"word_count"])), size =6, color = "blue") + 
+           geom_point(aes(x = pull(x[which.max(word_count),"yearmonth"]), y = pull(x[which.max(word_count),"word_count"])), size = 6, color = "red") +
+           labs(x = "Год", y = "Количество слов", title = paste0("Количество слов по конференции: ",str_to_title(wor))) +
            theme_classic() + theme(axis.title = element_text(size = 14)))
 }
 
@@ -65,11 +102,10 @@ topic_conf <- function(topic_choice, data) {
 
 unique_topics <- sort(unique(topic_speaker$topic))
 # Function to create a word cloud
-conf_wordcloud <- function(year, session){
-  library(wordcloud2)
+conf_wordcloud <- function(year, session, data){
   #pal <- brewer.pal(8, "Paired")
   #dark_pal <- pal %>% gt::adjust_luminance(-1.0)
-  tidy_conf %>% 
+  data %>% 
     filter(year == year, month == session) %>%
     count(word, sort = TRUE) %>% head(150) %>%
     wordcloud2(color = "random-dark") + WCtheme(1)

@@ -29,17 +29,30 @@ ui <- dashboardPage(
                         h3(strong("Trends over Time")),
                         p("The trends tab allows the user to explore the frequency of a word over time between conferences session. The option is available to explore the frequency of topics over time as well"),
                         h3(strong("Word Cloud:")),
-                        p("A word cloud can be created for the most frequent words during a conference session from April 1971 until April 2021")
+                        p("A word cloud can be created for the most frequent words during a conference session from April 1971 until April 2021"),
+                        selectInput("language", "Select a language", c("English", "Русский"), "English")
                     ))
                     ),
             # First tab content
             tabItem(tabName = "speakers",
                     fluidRow(
-                        box(width = 6,
-                            column(width = 6,
-                                   selectInput('type', "Topic or word", c("Topic", "Word"), "Topic"),
-                                   selectInput('speaker', 'Choose a speaker', unique_speakers, "Russell M. Nelson", selectize = TRUE),
-                                   actionButton('update1', 'Update')
+                        conditionalPanel(
+                            condition = "input.language == 'English'",
+                            box(width = 6,
+                                column(width = 6,
+                                       selectInput('type', "Topic or word", c("Topic", "Word"), "Topic"),
+                                       selectInput('speaker_en', 'Choose a speaker', unique_speakers, "Russell M. Nelson", selectize = TRUE),
+                                       actionButton('update1_en', 'Update')
+                                )
+                            )
+                        ),
+                        conditionalPanel(
+                            condition = "input.language == 'Русский'",
+                            box(width = 6,
+                                column(width = 6,
+                                       selectInput('speaker_ru', 'Выбирайте выступающего', unique_speakers_ru, "Russell M. Nelson", selectize = TRUE),
+                                       actionButton('update1_ru', 'Update')
+                                )
                             )
                         )
                     ),
@@ -53,19 +66,29 @@ ui <- dashboardPage(
             # Second tab content
             tabItem(tabName = "trends",
                     fluidRow(
-                        box(
-                            selectInput('type2', "Topic or word", c("Topic", "Word"), "Topic"),
-                            conditionalPanel(
-                                condition = "input.type2 == 'Topic'",
-                                selectizeInput('topic_trend', 'Choose a topic',
-                                               unique_topics, selected = "Jesus Christ")
-                            ),
-                            conditionalPanel(
-                                condition = "input.type2 == 'Word'",
-                                textInput('word_trend', "Choose a word", "Jesus Christ")
-                            ),
-                            actionButton('update2', 'Update')
+                        conditionalPanel(
+                            condition = "input.language == 'English'",
+                            box(
+                                selectInput('type2', "Topic or word", c("Topic", "Word"), "Topic"),
+                                conditionalPanel(
+                                    condition = "input.type2 == 'Topic'",
+                                    selectizeInput('topic_trend_en', 'Choose a topic',
+                                                   unique_topics, selected = "Jesus Christ")
+                                ),
+                                conditionalPanel(
+                                    condition = "input.type2 == 'Word'",
+                                    textInput('word_trend_en', "Choose a word", "Jesus Christ")
+                                ),
+                                actionButton('update2_en', 'Update')
+                            )
                         ),
+                        conditionalPanel(
+                            condition = "input.language == 'Русский'",
+                            box(
+                                textInput('word_trend_ru', "Выбирайте слово", "Иисус Христос"),
+                                actionButton('update2_ru', 'Обнови')
+                                )
+                            )
                     ),
                     fluidRow(
                         box(width = 10,
@@ -76,10 +99,21 @@ ui <- dashboardPage(
             
             tabItem(tabName = "word-cloud",
                     fluidRow(
-                        box(
-                            numericInput('year', "Choose a year", value = 2021, min = 1971, max = 2021, step = 1),
-                            selectInput('session', "Select conference", c("April", "October")),
-                            actionButton('update3', 'Update')
+                        conditionalPanel(
+                            condition = "input.language == 'English'",
+                            box(
+                                numericInput('year_en', "Choose a year", value = 2021, min = 1971, max = 2021, step = 1),
+                                selectInput('session_en', "Select conference", c("April", "October")),
+                                actionButton('update3_en', 'Update')
+                            )
+                        ),
+                        conditionalPanel(
+                            condition = "input.language == 'Русский'",
+                            box(
+                                numericInput('year_ru', "Выбирайте год", value = 2021, min = 2000, max = 2021, step = 1),
+                                selectInput('session_ru', "Выбирайте конференцию", c("Апрель", "Октябрь")),
+                                actionButton('update3_ru', 'Обнови')
+                            )
                         )
                     ),
                     fluidRow(
@@ -94,47 +128,72 @@ ui <- dashboardPage(
 
 
 server <- function(input, output, session){
-    rplot_words <- eventReactive(input$update1, {
-        if(input$type == "Word"){
-            plot1 <- tidy_conf_speaker %>%
-                filter(speaker == input$speaker) %>%
+    rplot_words <- eventReactive(c(input$update1_en, input$update1_ru), {
+        if(input$language == "English"){
+            if(input$type == "Word"){
+                plot1 <- tidy_conf_speaker %>%
+                    filter(speaker == input$speaker_en) %>%
+                    top_n(15, n) %>%
+                    mutate(word = reorder(word, n)) %>%
+                    ggplot(aes(word, n)) +
+                    geom_col(fill="#003058") +
+                    xlab(NULL) +
+                    ylab("Frequency") +
+                    coord_flip() +
+                    theme_classic() +
+                    theme(axis.text.y = element_text(size = 16),
+                          axis.title = element_text(size = 16))
+                plot1
+            } else{
+                plot1 <- topic_speaker %>%
+                    filter(speaker == input$speaker_en) %>%
+                    top_n(7, n) %>%
+                    mutate(topic = reorder(topic, n)) %>%
+                    ggplot(aes(topic, n)) +
+                    geom_col(fill="#003058") +
+                    xlab(NULL) +
+                    ylab("Frequency") +
+                    coord_flip() +
+                    theme_classic() +
+                    theme(axis.text.y = element_text(size = 16),
+                          axis.title = element_text(size = 16))
+                plot1
+            }
+        } else {
+            plot1 <- tidy_conf_speaker_ru %>%
+                filter(speaker == input$speaker_ru) %>%
                 top_n(15, n) %>%
                 mutate(word = reorder(word, n)) %>%
                 ggplot(aes(word, n)) +
                 geom_col(fill="#003058") +
                 xlab(NULL) +
-                ylab("Frequency") +
+                ylab("Частоты") +
                 coord_flip() +
                 theme_classic() +
                 theme(axis.text.y = element_text(size = 16),
                       axis.title = element_text(size = 16))
-            plot1
-        } else{
-            plot1 <- topic_speaker %>%
-                filter(speaker == input$speaker) %>%
-                top_n(7, n) %>%
-                mutate(topic = reorder(topic, n)) %>%
-                ggplot(aes(topic, n)) +
-                geom_col(fill="#003058") +
-                xlab(NULL) +
-                ylab("Frequency") +
-                coord_flip() +
-                theme_classic() +
-                theme(axis.text.y = element_text(size = 16),
-                      axis.title = element_text(size = 16))
-            plot1
         }
+        plot1
     })
-    rplot_word <- eventReactive(input$update2, {
-        if(input$type2 == "Word"){
-            word_conf(tolower(input$word_trend), whole = FALSE, conf)
+    rplot_word <- eventReactive( c(input$update2_en, input$update2_ru), {
+        if(input$language == "English"){
+            if(input$type2 == "Word"){
+                word_conf(tolower(input$word_trend_en), whole = FALSE, conf)
+            } else {
+                topic_conf(str_to_title(input$topic_trend_en), conf_topic)
+            }
         } else {
-            topic_conf(str_to_title(input$topic_trend), conf_topic)
-        }
+            word_conf_ru(tolower(input$word_trend_ru), whole = FALSE, russian)
+        }    
     })
-    rplot_wordcloud <- eventReactive(input$update3, {
-        session_num <- ifelse(input$session == "April", 4, 10)
-        conf_wordcloud(input$year, session_num)
+    rplot_wordcloud <- eventReactive(c(input$update3_en, input$update3_ru), {
+        if(input$language == "English"){
+            session_num <- ifelse(input$session_en == "April", 4, 10)
+            conf_wordcloud(input$year_en, session_num, tidy_conf)
+        } else{
+            session_num <- ifelse(input$session_ru == "Апрель", 4, 10)
+            conf_wordcloud(input$year_ru, session_num, tidy_conf_ru)
+        }
     })
     output$words <- renderPlot({ rplot_words() })
     output$word <- renderPlot({
