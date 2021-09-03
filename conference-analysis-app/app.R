@@ -177,7 +177,7 @@ server <- function(input, output, session){
     rplot_word <- eventReactive( c(input$update2_en, input$update2_ru), {
         if(input$language == "English"){
             if(input$type2 == "Word"){
-                word_conf(tolower(input$word_trend_en), whole = FALSE, conf)
+                word_conf_en(tolower(input$word_trend_en), whole = FALSE, conf)
             } else {
                 topic_conf(str_to_title(input$topic_trend_en), conf_topic)
             }
