@@ -11,8 +11,8 @@ library(stopwords)
 conf <- readRDS("rdsfiles/conf.rds")
 tidy_conf <- readRDS("rdsfiles/tidy_conf.rds")
 conf_topic <- readRDS("rdsfiles/conf_topic.rds")
-russian <- readRDS("rdsfiles/conf_ru.rds")
-tidy_conf_ru <- readRDS("rdsfiles/tidy_conf.rds")
+#russian <- readRDS("rdsfiles/conf_ru.rds")
+#tidy_conf_ru <- readRDS("rdsfiles/tidy_conf.rds")
 # Convert text to tidy table format, removing stop words
 #tidy_conf <- conf %>%
 #  filter(!is.na(text)) %>%
@@ -48,14 +48,14 @@ tidy_conf_speaker <- tidy_conf %>%
   mutate(word = str_to_title(word)) %>%
   ungroup()
 
-tidy_conf_speaker_ru <- tidy_conf_ru %>%
-  group_by(speaker) %>%
-  count(word, sort = TRUE) %>%
-  mutate(word = str_to_title(word)) %>%
-  ungroup()
+# tidy_conf_speaker_ru <- tidy_conf_ru %>%
+#   group_by(speaker) %>%
+#   count(word, sort = TRUE) %>%
+#   mutate(word = str_to_title(word)) %>%
+#   ungroup()
 
 unique_speakers <- sort(unique(tidy_conf$speaker))
-unique_speakers_ru <- sort(unique(tidy_conf_ru$speaker))
+#unique_speakers_ru <- sort(unique(tidy_conf_ru$speaker))
 
 # Function that McKay wrote: Finds the frequency of a word
 word_conf_en <- function(word, whole = TRUE, data) {
@@ -73,20 +73,20 @@ word_conf_en <- function(word, whole = TRUE, data) {
            theme_classic() + theme(axis.title = element_text(size = 14)))
 }
 
-word_conf_ru <- function(word, whole = TRUE, data) {
-  x <- data
-  x$yearmonth <- round(x$year + (x$month/12), 2)
-  wor <- tolower(word)
-  if (whole == FALSE) x$word_count <- str_count(tolower(x$text), wor)
-  if (whole == TRUE) x$word_count <- str_count(tolower(x$text), paste0("[\\s[:punct:]]",wor,"[\\s[:punct:]]"))
-  
-  x <- x %>% group_by(yearmonth) %>% summarize("word_count" = sum(word_count))
-  return(ggplot(x, aes(x = yearmonth, y = word_count)) + geom_line() + 
-           geom_point(aes(x = pull(x[which.min(word_count),"yearmonth"]),y=pull(x[which.min(word_count),"word_count"])), size =6, color = "blue") + 
-           geom_point(aes(x = pull(x[which.max(word_count),"yearmonth"]), y = pull(x[which.max(word_count),"word_count"])), size = 6, color = "red") +
-           labs(x = "Год", y = "Количество слов", title = paste0("Количество слов по конференции: ",str_to_title(wor))) +
-           theme_classic() + theme(axis.title = element_text(size = 14)))
-}
+# word_conf_ru <- function(word, whole = TRUE, data) {
+#   x <- data
+#   x$yearmonth <- round(x$year + (x$month/12), 2)
+#   wor <- tolower(word)
+#   if (whole == FALSE) x$word_count <- str_count(tolower(x$text), wor)
+#   if (whole == TRUE) x$word_count <- str_count(tolower(x$text), paste0("[\\s[:punct:]]",wor,"[\\s[:punct:]]"))
+#   
+#   x <- x %>% group_by(yearmonth) %>% summarize("word_count" = sum(word_count))
+#   return(ggplot(x, aes(x = yearmonth, y = word_count)) + geom_line() + 
+#            geom_point(aes(x = pull(x[which.min(word_count),"yearmonth"]),y=pull(x[which.min(word_count),"word_count"])), size =6, color = "blue") + 
+#            geom_point(aes(x = pull(x[which.max(word_count),"yearmonth"]), y = pull(x[which.max(word_count),"word_count"])), size = 6, color = "red") +
+#            labs(x = "Год", y = "Количество слов", title = paste0("Количество слов по конференции: ",str_to_title(wor))) +
+#            theme_classic() + theme(axis.title = element_text(size = 14)))
+# }
 
 topic_conf <- function(topic_choice, data) {
   x <- data %>% mutate(yearmonth = round(month + (year/12), digits = 2),
