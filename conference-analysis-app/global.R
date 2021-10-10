@@ -7,11 +7,12 @@ library(ggthemes)
 library(stopwords)
 
 # Conference text data
-conf <- read.csv('datasets/conference.csv', stringsAsFactors = FALSE)
-tidy_conf <- read.csv('datasets/tidy_conf.csv', stringsAsFactors = FALSE)
-conf_topic <- read.csv('datasets/talks_by_topic_dec_2020.csv', stringsAsFactors = FALSE)
-russian <- read.csv("datasets/conference_rus.csv", stringsAsFactors = FALSE)
-tidy_conf_ru <- read.csv("datasets/tidy_conf_ru.csv", stringsAsFactors = FALSE)
+
+conf <- readRDS("rdsfiles/conf.rds")
+tidy_conf <- readRDS("rdsfiles/tidy_conf.rds")
+conf_topic <- readRDS("rdsfiles/conf_topic.rds")
+russian <- readRDS("rdsfiles/conf_ru.rds")
+tidy_conf_ru <- readRDS("rdsfiles/tidy_conf.rds")
 # Convert text to tidy table format, removing stop words
 #tidy_conf <- conf %>%
 #  filter(!is.na(text)) %>%
